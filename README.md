@@ -27,6 +27,4 @@ Before running the application, you must set a permanent environment variable na
    * **Variable value:** *Your actual Gemini API key*
 5. Click **OK** on all windows to save.
 6. **Important:** Restart VS Code (or your IDE) to ensure the new variable is successfully loaded.
-   * **Variable value:** *Your actual Gemini API key*
-5. Click **OK** on all windows to save.
-6. **Important:** Restart VS Code (or your IDE) to ensure the new variable is successfully loaded.
+  
