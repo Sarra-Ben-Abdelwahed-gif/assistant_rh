@@ -32,7 +32,7 @@ public class CvAnalysisController {
         if (cvText == null || cvText.isBlank())
             throw new com.example.assistant_rh
                 .exception.BadRequestException(
-                "Le texte du CV est requis");
+                "CV text is required");
         return ResponseEntity.ok(
             cvAnalysisService.quickAnalyze(
                 cvText, jobOfferId));

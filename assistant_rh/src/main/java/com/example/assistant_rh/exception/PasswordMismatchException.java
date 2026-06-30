@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class PasswordMismatchException
         extends RuntimeException {
     public PasswordMismatchException() {
-        super("Les mots de passe ne correspondent pas");
+        super("Passwords do not match");
     }
 }

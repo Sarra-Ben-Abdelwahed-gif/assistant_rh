@@ -49,10 +49,10 @@ public class EmployeePortalController {
                 .getMyDocumentDownload(id));
     }
 
-    // Générer attestation de travail (PDF)
-    @GetMapping("/attestation")
+    // Générer Certificate de travail (PDF)
+    @GetMapping("/Certificate")
     @PreAuthorize("hasRole('EMPLOYEE')")
-    public ResponseEntity<byte[]> getAttestation() {
+    public ResponseEntity<byte[]> getCertificate() {
         // Récupérer l'id de l'employé connecté
         EmployeeDashboardDTO dash =
             employeePortalService.getMyDashboard();
@@ -60,7 +60,7 @@ public class EmployeePortalController {
             .generateWorkCertificate(dash.getId());
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=attestation.pdf")
+                "attachment; filename=Certificate.pdf")
             .contentType(MediaType.APPLICATION_PDF)
             .body(pdf);
     }
@@ -74,7 +74,7 @@ public class EmployeePortalController {
             .generateLeavePdf(leaveId);
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=conge_"
+                "attachment; filename=leave_"
                 + leaveId + ".pdf")
             .contentType(MediaType.APPLICATION_PDF)
             .body(pdf);

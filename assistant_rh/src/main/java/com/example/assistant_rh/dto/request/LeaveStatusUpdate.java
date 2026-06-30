@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class LeaveStatusUpdate {
 
-    @NotNull(message = "Le statut est obligatoire")
+    @NotNull(message = "Status is required")
     private LeaveStatus status;
 
     private String adminComment;

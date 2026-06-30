@@ -33,7 +33,7 @@ public class PdfService {
     private static final DateTimeFormatter FORMATTER =
         DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // Attestation de travail
+    // Certificate de travail
     public byte[] generateWorkCertificate(
             Long employeeId) {
         Employee emp = employeeRepository
@@ -49,7 +49,7 @@ public class PdfService {
             Document doc = new Document(pdf);
 
             // Titre
-            doc.add(new Paragraph("ATTESTATION DE TRAVAIL")
+            doc.add(new Paragraph("Certificate DE TRAVAIL")
                 .setTextAlignment(TextAlignment.CENTER)
                 .setFontSize(20)
                 .setBold()
@@ -62,7 +62,7 @@ public class PdfService {
                 au sein du département %s
                 depuis le %s.
 
-                Cette attestation est délivrée
+                Cette Certificate est délivrée
                 à l'intéressé(e) pour faire valoir
                 ce que de droit.
                 """,
@@ -83,7 +83,7 @@ public class PdfService {
                 .setMarginTop(40));
 
             doc.close();
-            log.info("Attestation générée : id={}",
+            log.info("Certificate générée : id={}",
                 employeeId);
             return baos.toByteArray();
         } catch (Exception e) {

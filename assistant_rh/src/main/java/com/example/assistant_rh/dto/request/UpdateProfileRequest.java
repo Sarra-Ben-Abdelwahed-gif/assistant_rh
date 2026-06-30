@@ -10,7 +10,7 @@ public class UpdateProfileRequest {
     private String lastName;
     private String phone;
 
-    @Size(min = 6, message = "Minimum 6 caractères")
+    @Size(min = 6, message = "Password must be at least 6 characters")
     private String newPassword;
 
     private String confirmNewPassword;

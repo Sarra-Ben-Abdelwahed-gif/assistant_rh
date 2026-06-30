@@ -9,13 +9,13 @@ import java.time.LocalDate;
 @Data
 public class JobOfferRequest {
 
-    @NotBlank(message = "Le titre est obligatoire")
+    @NotBlank(message = "Title is required")
     private String title;
 
-    @NotBlank(message = "La description est obligatoire")
+    @NotBlank(message = "Description is required")
     private String description;
 
-    @NotBlank(message = "Le département est obligatoire")
+    @NotBlank(message = "Department is required")
     private String department;
 
     private String location;
@@ -23,7 +23,7 @@ public class JobOfferRequest {
     private String experienceRequired;
     private String salaryRange;
 
-    @NotNull(message = "La date limite est obligatoire")
-    @Future(message = "La date limite doit être dans le futur")
+    @NotNull(message = "Deadline is required")
+    @Future(message = "Deadline must be in the future")
     private LocalDate deadline;
-}
+}  

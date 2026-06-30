@@ -11,32 +11,32 @@ import java.time.LocalDate;
 @Data
 public class EmployeeRequest {
 
-    @NotBlank(message = "Le prénom est obligatoire")
+    @NotBlank(message = "First name is required")
     private String firstName;
 
-    @NotBlank(message = "Le nom est obligatoire")
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
-    @Email(message = "Email invalide")
-    @NotBlank(message = "L'email est obligatoire")
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
     private String email;
 
     private String phone;
 
-    @NotBlank(message = "Le département est obligatoire")
+    @NotBlank(message = "Department is required")
     private String department;
 
-    @NotBlank(message = "Le poste est obligatoire")
+    @NotBlank(message = "Position is required")
     private String position;
 
     private String address;
 
-    @NotNull(message = "La date d'embauche est obligatoire")
+    @NotNull(message = "Hire date is required")
     private LocalDate hireDate;
 
     private LocalDate birthDate;
 
-    @Size(min = 6, message = "Minimum 6 caractères")
+    @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
     private EmployeeStatus status = EmployeeStatus.ACTIVE;

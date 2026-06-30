@@ -8,7 +8,7 @@ import java.util.Map;
 @Data
 public class ChatRequest {
 
-    @NotBlank(message = "Le message ne peut pas être vide")
+    @NotBlank(message = "Message cannot be empty")
     private String message;
 
     private List<Map<String, String>> history;

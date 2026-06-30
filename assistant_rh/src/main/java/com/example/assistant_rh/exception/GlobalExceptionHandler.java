@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
             handleBadCredentials(
                 BadCredentialsException ex) {
         return build(HttpStatus.UNAUTHORIZED,
-            "Email ou mot de passe incorrect");
+            "Incorrect email or password");
     }
 
     @ExceptionHandler(
@@ -86,7 +86,7 @@ public class GlobalExceptionHandler {
         body.put("timestamp",
             LocalDateTime.now().toString());
         body.put("status", 400);
-        body.put("error", "Erreur de validation");
+        body.put("error", "Validation error");
         body.put("details", errors);
         return ResponseEntity.badRequest().body(body);
     }
@@ -97,16 +97,16 @@ public class GlobalExceptionHandler {
             handleMaxSize(
                 MaxUploadSizeExceededException ex) {
         return build(HttpStatus.BAD_REQUEST,
-            "Fichier trop grand. Maximum : 10MB");
+            "File too large. Maximum size: 10MB");
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>>
             handleGeneric(Exception ex) {
-        log.error("Erreur inattendue : {}",
+        log.error("An unexpected error occurred : {}",
             ex.getMessage(), ex);
         return build(HttpStatus.INTERNAL_SERVER_ERROR,
-            "Une erreur inattendue est survenue");
+            "An unexpected error occurred");
     }
 
     private ResponseEntity<Map<String, Object>> build(

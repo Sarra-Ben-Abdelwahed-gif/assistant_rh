@@ -8,13 +8,13 @@ import java.time.LocalDate;
 @Data
 public class LeaveRequestCreate {
 
-    @NotNull(message = "La date de début est obligatoire")
+    @NotNull(message = "Start date is required")
     private LocalDate startDate;
 
-    @NotNull(message = "La date de fin est obligatoire")
+    @NotNull(message = "End date is required")
     private LocalDate endDate;
 
-    @NotNull(message = "Le type de congé est obligatoire")
+    @NotNull(message = "Leave type is required")
     private LeaveType type;
 
     private String reason;

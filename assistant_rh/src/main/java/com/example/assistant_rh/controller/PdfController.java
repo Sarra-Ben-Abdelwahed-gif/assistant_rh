@@ -15,15 +15,15 @@ public class PdfController {
 
     private final PdfService pdfService;
 
-    @GetMapping("/attestation/{employeeId}")
+    @GetMapping("/Certificate/{employeeId}")
     @PreAuthorize("hasRole('HR_ADMIN')")
-    public ResponseEntity<byte[]> attestation(
+    public ResponseEntity<byte[]> Certificate(
             @PathVariable Long employeeId) {
         byte[] pdf = pdfService
             .generateWorkCertificate(employeeId);
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=attestation_"
+                "attachment; filename=Certificate_"
                 + employeeId + ".pdf")
             .contentType(MediaType.APPLICATION_PDF)
             .body(pdf);
@@ -37,7 +37,7 @@ public class PdfController {
             .generateLeavePdf(leaveId);
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=conge_"
+                "attachment; filename=Leave_"
                 + leaveId + ".pdf")
             .contentType(MediaType.APPLICATION_PDF)
             .body(pdf);
@@ -50,7 +50,7 @@ public class PdfController {
             .generateEmployeeListPdf();
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_DISPOSITION,
-                "attachment; filename=employes.pdf")
+                "attachment; filename=employees.pdf")
             .contentType(MediaType.APPLICATION_PDF)
             .body(pdf);
     }

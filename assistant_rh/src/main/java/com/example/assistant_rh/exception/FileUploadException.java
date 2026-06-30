@@ -6,6 +6,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 public class FileUploadException extends RuntimeException {
     public FileUploadException(String message) {
-        super("Erreur upload fichier : " + message);
+        super("File upload error : " + message);
     }
 }

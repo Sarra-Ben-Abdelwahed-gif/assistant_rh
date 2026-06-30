@@ -8,8 +8,8 @@ public class InsufficientLeaveBalanceException
         extends RuntimeException {
     public InsufficientLeaveBalanceException(
             int balance, long requested) {
-        super("Solde insuffisant : " + balance
-            + " jour(s) disponible(s), "
-            + requested + " jour(s) demandé(s)");
+        super("Insufficient balance : " + balance
+            + " day(s) available, "
+            + requested + " day(s) requested");
     }
 }
