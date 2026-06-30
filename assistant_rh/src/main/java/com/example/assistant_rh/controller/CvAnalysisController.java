@@ -16,7 +16,7 @@ public class CvAnalysisController {
     private final CvAnalysisService cvAnalysisService;
 
     @PostMapping("/application/{id}")
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<CvAnalysisResponse> analyze(
             @PathVariable Long id) {
         return ResponseEntity.ok(
@@ -24,7 +24,7 @@ public class CvAnalysisController {
     }
 
     @PostMapping("/quick/{jobOfferId}")
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<CvAnalysisResponse> quickAnalyze(
             @PathVariable Long jobOfferId,
             @RequestBody Map<String, String> body) {

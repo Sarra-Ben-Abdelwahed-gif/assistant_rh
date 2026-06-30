@@ -28,7 +28,7 @@ public class LeaveController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<List<LeaveRequestDTO>> getAll() {
         return ResponseEntity.ok(leaveService.getAll());
     }
@@ -41,14 +41,14 @@ public class LeaveController {
     }
 
     @GetMapping("/pending")
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<List<LeaveRequestDTO>> getPending() {
         return ResponseEntity.ok(
             leaveService.getPending());
     }
 
     @PutMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<LeaveRequestDTO> updateStatus(
             @PathVariable Long id,
             @Valid @RequestBody LeaveStatusUpdate update) {

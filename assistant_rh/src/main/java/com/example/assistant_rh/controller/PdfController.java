@@ -16,7 +16,7 @@ public class PdfController {
     private final PdfService pdfService;
 
     @GetMapping("/attestation/{employeeId}")
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<byte[]> attestation(
             @PathVariable Long employeeId) {
         byte[] pdf = pdfService
@@ -30,7 +30,7 @@ public class PdfController {
     }
 
     @GetMapping("/leave/{leaveId}")
-    @PreAuthorize("hasAnyRole('ADMIN_RH','EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN','EMPLOYEE')")
     public ResponseEntity<byte[]> leavePdf(
             @PathVariable Long leaveId) {
         byte[] pdf = pdfService
@@ -44,7 +44,7 @@ public class PdfController {
     }
 
     @GetMapping("/employees")
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<byte[]> employeeList() {
         byte[] pdf = pdfService
             .generateEmployeeListPdf();

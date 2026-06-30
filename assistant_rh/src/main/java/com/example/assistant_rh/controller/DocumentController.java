@@ -18,7 +18,7 @@ public class DocumentController {
     private final DocumentService documentService;
 
     @PostMapping("/upload")
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<DocumentDTO> upload(
             @RequestParam("file") MultipartFile file,
             @RequestParam("employeeId") Long employeeId,
@@ -32,7 +32,7 @@ public class DocumentController {
     }
 
     @GetMapping("/employee/{employeeId}")
-    @PreAuthorize("hasAnyRole('ADMIN_RH','EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN','EMPLOYEE')")
     public ResponseEntity<List<DocumentDTO>> getByEmployee(
             @PathVariable Long employeeId) {
         return ResponseEntity.ok(
@@ -40,7 +40,7 @@ public class DocumentController {
     }
 
     @GetMapping("/{id}/download")
-    @PreAuthorize("hasAnyRole('ADMIN_RH','EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('HR_ADMIN','EMPLOYEE')")
     public ResponseEntity<DocumentDTO> getDownloadUrl(
             @PathVariable Long id) {
         return ResponseEntity.ok(
@@ -48,7 +48,7 @@ public class DocumentController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<Void> delete(
             @PathVariable Long id) {
         documentService.delete(id);

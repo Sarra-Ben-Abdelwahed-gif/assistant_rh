@@ -36,14 +36,14 @@ public class ApplicationController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<List<ApplicationDTO>> getAll() {
         return ResponseEntity.ok(
             applicationService.getAll());
     }
 
     @GetMapping("/job/{jobOfferId}")
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<List<ApplicationDTO>> getByJobOffer(
             @PathVariable Long jobOfferId) {
         return ResponseEntity.ok(
@@ -51,7 +51,7 @@ public class ApplicationController {
     }
 
     @PatchMapping("/{id}/status")
-    @PreAuthorize("hasRole('ADMIN_RH')")
+    @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<ApplicationDTO> updateStatus(
             @PathVariable Long id,
             @RequestParam ApplicationStatus status,
