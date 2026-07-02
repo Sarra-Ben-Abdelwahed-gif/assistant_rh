@@ -108,7 +108,7 @@ public class EmployeeService {
                 .build();
         employeeRepository.save(employee);
 
-        log.info("Employé créé : {}", employee.getEmail());
+        log.info("Employee created : {}", employee.getEmail());
         return mapper.toEmployeeDTO(employee);
     }
 
@@ -140,7 +140,7 @@ public class EmployeeService {
             employee.setAnnualLeaveBalance(
                 request.getAnnualLeaveBalance());
 
-        log.info("Employé mis à jour : id={}", id);
+        log.info("Employee updated : id={}", id);
         return mapper.toEmployeeDTO(
             employeeRepository.save(employee));
     }
@@ -153,6 +153,6 @@ public class EmployeeService {
                         "Employee", "id", id));
         employee.setStatus(EmployeeStatus.TERMINATED);
         employeeRepository.save(employee);
-        log.info("Employé désactivé : id={}", id);
+        log.info("Employee deactivated : id={}", id);
     }
 }

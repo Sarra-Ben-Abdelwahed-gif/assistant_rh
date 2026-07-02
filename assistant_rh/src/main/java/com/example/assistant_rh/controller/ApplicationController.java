@@ -10,7 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-// Les nouveaux imports indispensables pour la pagination
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,7 +39,7 @@ public class ApplicationController {
                         phone, coverLetter, cv));
     }
 
-    // --- MÉTHODE MODIFIÉE POUR LA PAGINATION ---
+    // --- PAGINATION ---
     @GetMapping
     @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<Page<ApplicationDTO>> getAll(

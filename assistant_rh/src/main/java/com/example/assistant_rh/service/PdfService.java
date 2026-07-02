@@ -33,7 +33,7 @@ public class PdfService {
     private static final DateTimeFormatter FORMATTER =
         DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
-    // Certificate de travail
+    
     public byte[] generateWorkCertificate(
             Long employeeId) {
         Employee emp = employeeRepository
@@ -48,23 +48,23 @@ public class PdfService {
             PdfDocument pdf = new PdfDocument(writer);
             Document doc = new Document(pdf);
 
-            // Titre
-            doc.add(new Paragraph("Certificate DE TRAVAIL")
+            
+            doc.add(new Paragraph("Work Certificate")
                 .setTextAlignment(TextAlignment.CENTER)
                 .setFontSize(20)
                 .setBold()
                 .setMarginBottom(30));
 
-            // Contenu
+            
             doc.add(new Paragraph(String.format("""
-                Je soussigné(e), certifie que
-                M./Mme %s %s occupe le poste de %s
-                au sein du département %s
-                depuis le %s.
+                I, the undersigned, certify that
+                Mr./Ms. %s %s holds the position of %s
+                within the %s department
+                since %s.
 
-                Cette Certificate est délivrée
-                à l'intéressé(e) pour faire valoir
-                ce que de droit.
+                This certificate is issued
+                to the interested party for all
+                legal intents and purposes.
                 """,
                 emp.getFirstName(), emp.getLastName(),
                 emp.getPosition(), emp.getDepartment(),
@@ -72,29 +72,29 @@ public class PdfService {
                 .setFontSize(12)
                 .setMarginBottom(40));
 
-            // Date et signature
+            
             doc.add(new Paragraph(
-                "Fait le " + LocalDate.now()
+                "Issued on " + LocalDate.now()
                     .format(FORMATTER))
                 .setTextAlignment(TextAlignment.RIGHT));
             doc.add(new Paragraph(
-                "Signature et cachet")
+                "Signature and stamp")
                 .setTextAlignment(TextAlignment.RIGHT)
                 .setMarginTop(40));
 
             doc.close();
-            log.info("Certificate générée : id={}",
+            log.info("Certificate generated: id={}",
                 employeeId);
             return baos.toByteArray();
         } catch (Exception e) {
-            log.error("Erreur PDF : {}", e.getMessage());
+            log.error("PDF error: {}", e.getMessage());
             throw new RuntimeException(
-                "Erreur génération PDF : "
+                "PDF generation error : "
                 + e.getMessage());
         }
     }
 
-    // Fiche de congé
+    
     public byte[] generateLeavePdf(Long leaveId) {
         LeaveRequest leave = leaveRepository
                 .findById(leaveId)
@@ -110,58 +110,58 @@ public class PdfService {
             Document doc = new Document(pdf);
 
             doc.add(new Paragraph(
-                "FICHE DE DEMANDE DE CONGÉ")
+                "LEAVE REQUEST FORM")
                 .setTextAlignment(TextAlignment.CENTER)
                 .setFontSize(18)
                 .setBold()
                 .setMarginBottom(20));
 
-            // Tableau infos
+            
             Table table = new Table(
                 UnitValue.createPercentArray(
                     new float[]{40, 60}))
                 .useAllAvailableWidth();
 
-            addRow(table, "Employé",
+            addRow(table, "Employee",
                 emp.getFirstName() + " "
                 + emp.getLastName());
-            addRow(table, "Département",
+            addRow(table, "Department",
                 emp.getDepartment());
-            addRow(table, "Poste", emp.getPosition());
-            addRow(table, "Type de congé",
+            addRow(table, "Position", emp.getPosition());
+            addRow(table, "Leave type",
                 leave.getType().toString());
-            addRow(table, "Date de début",
+            addRow(table, "Start date",
                 leave.getStartDate().format(FORMATTER));
-            addRow(table, "Date de fin",
+            addRow(table, "End date",
                 leave.getEndDate().format(FORMATTER));
-            addRow(table, "Nombre de jours",
+            addRow(table, "Number of days",
                 String.valueOf(leave.getNumberOfDays()));
-            addRow(table, "Statut",
+            addRow(table, "Status",
                 leave.getStatus().toString());
             if (leave.getReason() != null)
-                addRow(table, "Motif", leave.getReason());
+                addRow(table, "Reason", leave.getReason());
             if (leave.getAdminComment() != null)
-                addRow(table, "Commentaire RH",
+                addRow(table, "HR comment",
                     leave.getAdminComment());
 
             doc.add(table);
             doc.add(new Paragraph(
-                "Généré le "
+                "Generated on "
                 + LocalDate.now().format(FORMATTER))
                 .setTextAlignment(TextAlignment.RIGHT)
                 .setMarginTop(30)
                 .setFontSize(10));
 
             doc.close();
-            log.info("PDF congé généré : id={}", leaveId);
+            log.info("Leave PDF generated: id={}", leaveId);
             return baos.toByteArray();
         } catch (Exception e) {
             throw new RuntimeException(
-                "Erreur PDF congé : " + e.getMessage());
+                "Leave PDF error : " + e.getMessage());
         }
     }
 
-    // Liste des employés
+    
     public byte[] generateEmployeeListPdf() {
         List<Employee> employees =
             employeeRepository.findAll();
@@ -172,17 +172,17 @@ public class PdfService {
             PdfDocument pdf = new PdfDocument(writer);
             Document doc = new Document(pdf);
 
-            doc.add(new Paragraph("LISTE DES EMPLOYÉS")
+            doc.add(new Paragraph("EMPLOYEE LIST")
                 .setTextAlignment(TextAlignment.CENTER)
                 .setFontSize(18)
                 .setBold()
                 .setMarginBottom(20));
 
             doc.add(new Paragraph(
-                "Généré le "
+                "Done on "
                 + LocalDate.now().format(FORMATTER)
                 + " — Total : "
-                + employees.size() + " employé(s)")
+                + employees.size() + " employee(s)")
                 .setFontSize(10)
                 .setMarginBottom(15));
 
@@ -193,8 +193,8 @@ public class PdfService {
 
             // En-têtes
             for (String header : new String[]{
-                "Nom", "Email", "Département",
-                "Poste", "Statut"}) {
+                "Name", "Email", "Department",
+                "Position", "Status"}) {
                 table.addHeaderCell(new Cell()
                     .add(new Paragraph(header)
                         .setBold())
@@ -202,7 +202,7 @@ public class PdfService {
                         ColorConstants.LIGHT_GRAY));
             }
 
-            // Données
+            
             for (Employee emp : employees) {
                 table.addCell(emp.getFirstName()
                     + " " + emp.getLastName());
@@ -220,7 +220,7 @@ public class PdfService {
             return baos.toByteArray();
         } catch (Exception e) {
             throw new RuntimeException(
-                "Erreur PDF liste : " + e.getMessage());
+                "PDF error : " + e.getMessage());
         }
     }
 

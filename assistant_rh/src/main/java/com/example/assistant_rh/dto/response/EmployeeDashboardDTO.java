@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 public class EmployeeDashboardDTO {
-    // Infos personnelles
+    
     private Long id;
     private String firstName;
     private String lastName;
@@ -18,15 +18,15 @@ public class EmployeeDashboardDTO {
     private LocalDate hireDate;
     private EmployeeStatus status;
 
-    // Solde congés
+    
     private int annualLeaveBalance;
     private long pendingLeaves;
     private long approvedLeaves;
     private long rejectedLeaves;
 
-    // Documents
+    
     private long totalDocuments;
 
-    // Dernières demandes
+    
     private List<LeaveRequestDTO> recentLeaves;
 }

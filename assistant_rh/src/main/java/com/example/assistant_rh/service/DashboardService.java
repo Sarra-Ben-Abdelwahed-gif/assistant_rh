@@ -45,7 +45,7 @@ public class DashboardService {
             applicationRepository.countByStatus(
                 ApplicationStatus.PENDING));
 
-        // Employés par département
+        
         Map<String, Long> byDept = new HashMap<>();
         employeeRepository.findAll().forEach(e -> {
             if (e.getDepartment() != null)
@@ -54,14 +54,14 @@ public class DashboardService {
         });
         dto.setEmployeesByDepartment(byDept);
 
-        // Congés par type
+        
         Map<String, Long> byLeaveType = new HashMap<>();
         for (LeaveType type : LeaveType.values())
             byLeaveType.put(type.name(),
                 leaveRepository.countByType(type));
         dto.setLeavesByType(byLeaveType);
 
-        // Candidatures par statut
+        
         Map<String, Long> byAppStatus = new HashMap<>();
         for (ApplicationStatus status :
                 ApplicationStatus.values())

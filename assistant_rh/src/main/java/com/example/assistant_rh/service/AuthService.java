@@ -60,7 +60,7 @@ public class AuthService {
     // ───  Admin/Employee registration ────────────────────
     public AuthResponse register(RegisterRequest request) {
 
-        // Vérifier correspondance mots de passe
+        
         if (!request.getPassword()
                 .equals(request.getConfirmPassword()))
             throw new PasswordMismatchException();
@@ -195,7 +195,7 @@ public class AuthService {
         return buildAuthResponse(user);
     }
 
-    // ─── Utility private method ────────────────────
+    
     private AuthResponse buildAuthResponse(User user) {
     RefreshToken refresh =
         refreshTokenService
@@ -227,7 +227,7 @@ public class AuthService {
             .validate(refreshTokenStr);
     refreshTokenService
         .revokeAll(refreshToken.getUser());
-    log.info("Déconnexion : {}",
+    log.info("Logout : {}",
         refreshToken.getUser().getEmail());
 }
 }

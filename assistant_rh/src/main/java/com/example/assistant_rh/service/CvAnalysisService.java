@@ -50,17 +50,17 @@ public class CvAnalysisService {
         String systemPrompt =
             buildAnalysisPrompt(offer);
         String userPrompt = String.format("""
-            Candidat : %s (%s)
-            Lettre de motivation : %s
+            Candidate : %s (%s)
+            motivation letter : %s
 
-            Contenu du CV :
+            CV content :
             %s
             """,
             application.getCandidateName(),
             application.getCandidateEmail(),
             application.getCoverLetter() != null
                 ? application.getCoverLetter()
-                : "Non fournie",
+                : "Not provided",
             cvContent);
 
         
@@ -75,7 +75,7 @@ public class CvAnalysisService {
         application.setScore(result.getScore());
         applicationRepository.save(application);
 
-        log.info("Analyse CV Gemini : id={}, score={}",
+        log.info("Gemini CV analysis: id={}, score={}",
             applicationId, result.getScore());
         return result;
     }
@@ -91,7 +91,7 @@ public class CvAnalysisService {
         String systemPrompt =
             buildAnalysisPrompt(offer);
         String userPrompt =
-            "CV à analyser :\n" + cvText;
+            "CV to analyze :\n" + cvText;
 
         
         String aiResponse = geminiService.chat(
@@ -104,7 +104,7 @@ public class CvAnalysisService {
 
     private String extractCvText(String minioKey) {
         if (minioKey == null)
-            return "CV non disponible";
+            return "CV not available";
         try {
             InputStream stream =
                 minioClient.getObject(
@@ -116,38 +116,38 @@ public class CvAnalysisService {
                 stream.readAllBytes(),
                 StandardCharsets.UTF_8);
         } catch (Exception e) {
-            log.warn("Impossible de lire CV : {}",
+            log.warn("Unable to read CV: {}",
                 e.getMessage());
-            return "Contenu CV non lisible";
+            return "CV content unreadable";
         }
     }
 
     private String buildAnalysisPrompt(
             JobOffer offer) {
         return String.format("""
-            Tu es un expert RH avec 15 ans d'expérience.
-            Analyse ce CV pour le poste suivant :
+            You are an HR expert with 15 years of experience.
+Analyze this CV for the following position:
 
-            - Titre       : %s
-            - Département : %s
-            - Contrat     : %s
-            - Expérience  : %s
-            - Description : %s
+- Title       : %s
+- Department  : %s
+- Contract    : %s
+- Experience  : %s
+- Description : %s
 
-            Réponds UNIQUEMENT en JSON valide :
-            {
-              "score": [0-100],
-              "summary": "[résumé du profil]",
-              "strengths": "[points forts]",
-              "weaknesses": "[points faibles]",
-              "recommendation": "[RECOMMANDE, ENTRETIEN_POSSIBLE, ou REJETE]"
-            }
+Reply ONLY in valid JSON:
+{
+  "score": [0-100],
+  "summary": "[profile summary]",
+  "strengths": "[strengths]",
+  "weaknesses": "[weaknesses]",
+  "recommendation": "[RECOMMENDED, INTERVIEW_POSSIBLE, or REJECTED]"
+}
 
-            Scoring :
-            80-100 = Excellent
-            60-79  = Bon profil
-            40-59  = Profil moyen
-            0-39   = Insuffisant
+Scoring:
+80-100 = Excellent
+60-79  = Good profile
+40-59  = Average profile
+0-39   = Insufficient
             """,
             offer.getTitle(),
             offer.getDepartment(),
@@ -186,12 +186,12 @@ public class CvAnalysisService {
             result.setRecommendation(
                 extractString(json, "recommendation"));
         } catch (Exception e) {
-            log.warn("Parse Gemini échoué : {}",
+            log.warn("Gemini parsing failed: {}",
                 e.getMessage());
             result.setScore(50);
-            result.setSummary("Analyse effectuée");
+            result.setSummary("Analysis completed");
             result.setRecommendation(
-                "ENTRETIEN_POSSIBLE");
+                "INTERVIEW_POSSIBLE");
         }
         return result;
     }

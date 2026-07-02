@@ -19,7 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// Les deux imports pour la pagination
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -35,7 +35,7 @@ public class DocumentService {
     private final MinioService minioService;
     private final MapperConfig mapper;
 
-    // Renommé en uploadDocument pour correspondre au Controller
+    
     public DocumentDTO uploadDocument(MultipartFile file,
                                       Long employeeId, String category,
                                       String description) {
@@ -84,12 +84,12 @@ public class DocumentService {
                     minioService.generateDownloadUrl(minioKey));
         } catch (Exception ignored) {}
 
-        log.info("Document uploadé : {} pour employé id={}",
+        log.info("Document uploaded: {} for employee id={}",
                 fileName, employeeId);
         return dto;
     }
 
-    // Méthode de pagination générale
+    
     public Page<DocumentDTO> getAll(Pageable pageable) {
         return documentRepository.findAll(pageable)
                 .map(d -> {
@@ -123,7 +123,7 @@ public class DocumentService {
                 .collect(Collectors.toList());
     }
 
-    // Renommé en downloadDocument pour correspondre au Controller
+    
     public DocumentDTO downloadDocument(Long id) {
         Document doc = documentRepository
                 .findById(id)
@@ -137,13 +137,13 @@ public class DocumentService {
                             doc.getMinioKey()));
         } catch (Exception e) {
             throw new FileUploadException(
-                    "Impossible de générer l'URL : "
+                    "Unable to generate URL : "
                             + e.getMessage());
         }
         return dto;
     }
 
-    // Ajout de la méthode getById demandée par ton contrôleur à la ligne 70
+    
     public DocumentDTO getById(Long id) {
         Document doc = documentRepository
                 .findById(id)
@@ -158,7 +158,7 @@ public class DocumentService {
         return dto;
     }
 
-    // Renommé en deleteDocument pour correspondre au Controller
+    
     public void deleteDocument(Long id) {
         Document doc = documentRepository
                 .findById(id)
@@ -168,10 +168,10 @@ public class DocumentService {
         try {
             minioService.deleteFile(doc.getMinioKey());
         } catch (Exception e) {
-            log.warn("Fichier MinIO non supprimé : {}",
+            log.warn("MinIO file not deleted: {}",
                     e.getMessage());
         }
         documentRepository.delete(doc);
-        log.info("Document supprimé : id={}", id);
+        log.info("Document deleted: id={}", id);
     }
 }

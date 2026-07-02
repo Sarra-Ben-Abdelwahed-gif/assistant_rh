@@ -46,14 +46,14 @@ public class LeaveService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", "email", email));
 
         if (request.getEndDate().isBefore(request.getStartDate())) {
-            throw new BadRequestException("La date de fin doit être après la date de début");
+            throw new BadRequestException("The end date must be after the start date");
         }
 
         if (leaveRepository.existsOverlappingLeave(
                 employee.getId(),
                 request.getStartDate(),
                 request.getEndDate())) {
-            throw new BadRequestException("Vous avez déjà une demande sur cette période");
+            throw new BadRequestException("You already have a request for this period");
         }
 
         long days = java.time.temporal.ChronoUnit.DAYS
@@ -74,7 +74,7 @@ public class LeaveService {
                 .reason(request.getReason())
                 .build();
 
-        log.info("Demande congé créée : employé={}", employee.getEmail());
+        log.info("Leave request created: employee={}", employee.getEmail());
         return mapper.toLeaveDTO(
                 leaveRepository.save(leave));
     }
@@ -111,7 +111,7 @@ public class LeaveService {
                 .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest", "id", id));
 
         if (leave.getStatus() != LeaveStatus.PENDING) {
-            throw new BadRequestException("Cette demande a déjà été traitée");
+            throw new BadRequestException("This request has already been processed");
         }
 
         String adminEmail = getCurrentEmail();
@@ -135,7 +135,7 @@ public class LeaveService {
             }
         }
 
-        log.info("Congé {} : id={} par {}", leave.getStatus(), id, adminEmail);
+        log.info("Leave {} : id={} par {}", leave.getStatus(), id, adminEmail);
         return mapper.toLeaveDTO(
                 leaveRepository.save(leave));
     }
@@ -146,10 +146,10 @@ public class LeaveService {
                 .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest", "id", id));
 
         if (leave.getStatus() != LeaveStatus.PENDING) {
-            throw new BadRequestException("Impossible de supprimer une demande traitée");
+            throw new BadRequestException("Cannot delete a processed request");
         }
         leaveRepository.delete(leave);
-        log.info("Demande congé supprimée : id={}", id);
+        log.info("Leave request deleted : id={}", id);
     }
 
     private String getCurrentEmail() {

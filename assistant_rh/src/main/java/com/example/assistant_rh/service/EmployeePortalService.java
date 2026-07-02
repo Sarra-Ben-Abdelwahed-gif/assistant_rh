@@ -29,7 +29,7 @@ public class EmployeePortalService {
     private final MinioService minioService;
     private final MapperConfig mapper;
 
-    // Tableau de bord de l'employé connecté
+    
     public EmployeeDashboardDTO getMyDashboard() {
         String email = getCurrentEmail();
         Employee emp = getEmployeeByEmail(email);
@@ -79,7 +79,7 @@ public class EmployeePortalService {
         return dto;
     }
 
-    // Mes documents
+    
     public List<DocumentDTO> getMyDocuments() {
         String email = getCurrentEmail();
         Employee emp = getEmployeeByEmail(email);
@@ -100,7 +100,7 @@ public class EmployeePortalService {
             .collect(Collectors.toList());
     }
 
-    // Télécharger un de mes documents
+    
     public DocumentDTO getMyDocumentDownload(
             Long docId) {
         String email = getCurrentEmail();
@@ -112,8 +112,7 @@ public class EmployeePortalService {
                 new ResourceNotFoundException(
                     "Document", "id", docId));
 
-        // ✅ Vérifier que le document appartient
-        // à l'employé connecté
+        
         if (!doc.getEmployee().getId()
                 .equals(emp.getId()))
             throw new UnauthorizedAccessException();
@@ -130,7 +129,7 @@ public class EmployeePortalService {
         return dto;
     }
 
-    // ─── Méthodes privées ────────────────────────────
+    
     private Employee getEmployeeByEmail(String email) {
         return employeeRepository
             .findByEmail(email)

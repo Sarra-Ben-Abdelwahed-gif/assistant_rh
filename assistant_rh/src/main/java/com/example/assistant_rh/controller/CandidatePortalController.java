@@ -17,7 +17,7 @@ public class CandidatePortalController {
     private final CandidatePortalService
         candidatePortalService;
 
-    // Tableau de bord du candidat
+    
     @GetMapping("/dashboard")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<CandidateDashboardDTO>
@@ -26,7 +26,7 @@ public class CandidatePortalController {
             candidatePortalService.getMyDashboard());
     }
 
-    // Mes candidatures
+    
     @GetMapping("/applications")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<List<ApplicationDTO>>
@@ -36,7 +36,7 @@ public class CandidatePortalController {
                 .getMyCandidatures());
     }
 
-    // Détail d'une candidature
+    
     @GetMapping("/applications/{id}")
     @PreAuthorize("hasRole('CANDIDATE')")
     public ResponseEntity<ApplicationDTO>

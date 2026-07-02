@@ -29,10 +29,10 @@ public class MinioService {
                 minioClient.makeBucket(
                     MakeBucketArgs.builder()
                         .bucket(bucket).build());
-                log.info("Bucket créé : {}", bucket);
+                log.info("Bucket created : {}", bucket);
             }
         } catch (Exception e) {
-            log.error("Erreur bucket : {}", e.getMessage());
+            log.error("Error bucket : {}", e.getMessage());
         }
     }
 
@@ -49,7 +49,7 @@ public class MinioService {
                     file.getSize(), -1)
                 .contentType(file.getContentType())
                 .build());
-        log.info("Fichier uploadé : {}", key);
+        log.info("File uploaded : {}", key);
         return key;
     }
 
@@ -70,6 +70,6 @@ public class MinioService {
                 .bucket(bucket)
                 .object(key)
                 .build());
-        log.info("Fichier supprimé : {}", key);
+        log.info("File deleted : {}", key);
     }
 }

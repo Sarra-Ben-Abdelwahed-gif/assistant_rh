@@ -49,7 +49,7 @@ public class JobOfferService {
                 .createdBy(admin)
                 .build();
 
-        log.info("Offre créée : {}", offer.getTitle());
+        log.info("Offer created : {}", offer.getTitle());
         return mapper.toJobOfferDTO(
             jobOfferRepository.save(offer));
     }
@@ -96,7 +96,7 @@ public class JobOfferService {
         offer.setSalaryRange(request.getSalaryRange());
         offer.setDeadline(request.getDeadline());
 
-        log.info("Offre mise à jour : id={}", id);
+        log.info("Offer updated : id={}", id);
         return mapper.toJobOfferDTO(
             jobOfferRepository.save(offer));
     }
@@ -110,7 +110,7 @@ public class JobOfferService {
         offer.setActive(!offer.isActive());
         jobOfferRepository.save(offer);
         log.info("Offre {} : id={}",
-            offer.isActive() ? "activée" : "désactivée", id);
+            offer.isActive() ? "Enabled" : "Disabled", id);
     }
 
     public void delete(Long id) {
@@ -118,6 +118,6 @@ public class JobOfferService {
             throw new ResourceNotFoundException(
                 "JobOffer", "id", id);
         jobOfferRepository.deleteById(id);
-        log.info("Offre supprimée : id={}", id);
+        log.info("Offer deleted : id={}", id);
     }
 }

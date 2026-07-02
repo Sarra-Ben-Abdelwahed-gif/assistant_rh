@@ -21,7 +21,7 @@ public class EmployeePortalController {
         employeePortalService;
     private final PdfService pdfService;
 
-    // Tableau de bord de l'employé connecté
+    
     @GetMapping("/dashboard")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<EmployeeDashboardDTO>
@@ -30,7 +30,7 @@ public class EmployeePortalController {
             employeePortalService.getMyDashboard());
     }
 
-    // Mes documents
+    
     @GetMapping("/documents")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<List<DocumentDTO>>
@@ -39,7 +39,7 @@ public class EmployeePortalController {
             employeePortalService.getMyDocuments());
     }
 
-    // Télécharger un de mes documents
+    
     @GetMapping("/documents/{id}/download")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<DocumentDTO>
@@ -49,11 +49,11 @@ public class EmployeePortalController {
                 .getMyDocumentDownload(id));
     }
 
-    // Générer Certificate de travail (PDF)
+    
     @GetMapping("/Certificate")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<byte[]> getCertificate() {
-        // Récupérer l'id de l'employé connecté
+        
         EmployeeDashboardDTO dash =
             employeePortalService.getMyDashboard();
         byte[] pdf = pdfService
@@ -65,7 +65,7 @@ public class EmployeePortalController {
             .body(pdf);
     }
 
-    // Générer PDF d'un congé
+    
     @GetMapping("/leaves/{leaveId}/pdf")
     @PreAuthorize("hasRole('EMPLOYEE')")
     public ResponseEntity<byte[]> getLeavePdf(

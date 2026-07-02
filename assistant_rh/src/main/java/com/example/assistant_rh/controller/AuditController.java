@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-// Les imports essentiels pour la pagination
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,19 +20,19 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/audit")
 @RequiredArgsConstructor
-@Tag(name = "Audit", description = "Logs d'audit - Admin seulement")
+@Tag(name = "Audit", description = "Audit Logs - Admin only ")
 public class AuditController {
 
     private final AuditLogRepository auditLogRepository;
 
-    @Operation(summary = "Tous les logs d'audit")
+    @Operation(summary = "All audit logs")
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN_RH')") // Adapté selon ton pattern d'autorité
+    @PreAuthorize("hasRole('ADMIN_RH')") 
     public ResponseEntity<Page<AuditLog>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id") String sortBy,
-            @RequestParam(defaultValue = "desc") String direction) { // "desc" par défaut pour voir les logs récents en premier
+            @RequestParam(defaultValue = "desc") String direction) { 
 
         Sort sort = direction.equalsIgnoreCase("desc")
                 ? Sort.by(sortBy).descending()
@@ -44,7 +44,7 @@ public class AuditController {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "Logs par utilisateur")
+    @Operation(summary = "Logs by user")
     @GetMapping("/user/{email}")
     @PreAuthorize("hasRole('ADMIN_RH')")
     public ResponseEntity<Page<AuditLog>> getByUser(
@@ -64,7 +64,7 @@ public class AuditController {
         return ResponseEntity.ok(result);
     }
 
-    @Operation(summary = "Actions échouées")
+    @Operation(summary = "Failed operations")
     @GetMapping("/failed")
     @PreAuthorize("hasRole('ADMIN_RH')")
     public ResponseEntity<Page<AuditLog>> getFailed(

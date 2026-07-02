@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-// Imports requis pour la pagination et le tri
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,7 +34,7 @@ public class LeaveController {
                 .body(leaveService.create(request));
     }
 
-    // --- MÉTHODE GÉNERALE MODIFIÉE POUR LA PAGINATION ---
+    
     @GetMapping
     @PreAuthorize("hasRole('HR_ADMIN')")
     public ResponseEntity<Page<LeaveRequestDTO>> getAll(

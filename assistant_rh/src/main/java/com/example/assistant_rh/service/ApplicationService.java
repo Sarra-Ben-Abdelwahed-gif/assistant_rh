@@ -44,13 +44,13 @@ public class ApplicationService {
 
         if (!offer.isActive())
             throw new BadRequestException(
-                "Cette offre n'est plus active");
+                "This offer is no longer active");
 
         if (applicationRepository
                 .existsByCandidateEmailAndJobOfferId(
                     candidateEmail, jobOfferId))
             throw new BadRequestException(
-                "Vous avez déjà postulé à cette offre");
+                "You have already applied to this offer");
 
         String cvKey = null;
         String cvFileName = null;
@@ -74,7 +74,7 @@ public class ApplicationService {
                 .jobOffer(offer)
                 .build();
 
-        log.info("Candidature reçue : {} pour offre id={}",
+        log.info("Application received: {} for offer id={}",
             candidateEmail, jobOfferId);
         return mapper.toApplicationDTO(
             applicationRepository.save(app));

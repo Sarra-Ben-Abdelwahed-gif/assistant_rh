@@ -16,7 +16,7 @@ public class ChatBotController {
 
     private final ChatBotService chatBotService;
 
-    // Question simple sans historique
+    
     @PostMapping("/ask")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ChatResponse> ask(
@@ -26,7 +26,7 @@ public class ChatBotController {
                 request.getMessage()));
     }
 
-    // Conversation avec historique + MCP
+    
     @PostMapping("/chat")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ChatResponse> chat(

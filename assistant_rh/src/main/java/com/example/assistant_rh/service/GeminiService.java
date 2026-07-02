@@ -27,7 +27,7 @@ public class GeminiService {
     @Value("${gemini.api.url}")
     private String apiUrl;
 
-    // ─── Question simple ─────────────────────────────
+    
     public String chat(String systemPrompt,
             String userMessage) {
         try {
@@ -40,14 +40,14 @@ public class GeminiService {
             return callGemini(requestBody);
 
         } catch (Exception e) {
-            log.error("Erreur Gemini chat : {}",
+            log.error("Error Gemini chat : {}",
                 e.getMessage());
             throw new RuntimeException(
-                "Service IA temporairement indisponible");
+                "AI service temporarily unavailable");
         }
     }
 
-    // ─── Conversation avec historique ────────────────
+    
     public String chatWithHistory(
             String systemPrompt,
             List<Map<String, String>> history,
@@ -59,14 +59,14 @@ public class GeminiService {
             return callGemini(requestBody);
 
         } catch (Exception e) {
-            log.error("Erreur Gemini historique : {}",
+            log.error("Error Gemini history : {}",
                 e.getMessage());
             throw new RuntimeException(
-                "Service IA temporairement indisponible");
+                "AI service temporarily unavailable");
         }
     }
 
-    // ─── Construire requête simple ───────────────────
+    
     private String buildSimpleRequest(String text)
             throws Exception {
         ObjectNode root = objectMapper.createObjectNode();
@@ -85,7 +85,7 @@ public class GeminiService {
         contents.add(content);
         root.set("contents", contents);
 
-        // Configuration de génération
+        
         ObjectNode genConfig =
             objectMapper.createObjectNode();
         genConfig.put("temperature", 0.7);
@@ -95,7 +95,7 @@ public class GeminiService {
         return objectMapper.writeValueAsString(root);
     }
 
-    // ─── Construire requête avec historique ──────────
+    
     private String buildHistoryRequest(
             String systemPrompt,
             List<Map<String, String>> history,
@@ -105,8 +105,7 @@ public class GeminiService {
         ArrayNode contents =
             objectMapper.createArrayNode();
 
-        // Ajouter le contexte système comme
-        // premier message user
+        
         if (systemPrompt != null
                 && !systemPrompt.isBlank()) {
             ObjectNode sysContent =
@@ -121,8 +120,7 @@ public class GeminiService {
             sysContent.set("parts", sysParts);
             contents.add(sysContent);
 
-            // Réponse fictive du model pour
-            // établir le contexte
+            
             ObjectNode sysReply =
                 objectMapper.createObjectNode();
             sysReply.put("role", "model");
@@ -131,13 +129,13 @@ public class GeminiService {
             ObjectNode replyPart =
                 objectMapper.createObjectNode();
             replyPart.put("text",
-                "Compris. Je suis prêt à vous aider.");
+                "Understood. Ready to help.");
             replyParts.add(replyPart);
             sysReply.set("parts", replyParts);
             contents.add(sysReply);
         }
 
-        // Ajouter l'historique de conversation
+        
         if (history != null) {
             for (Map<String, String> msg : history) {
                 String role = "user".equals(
@@ -157,7 +155,7 @@ public class GeminiService {
             }
         }
 
-        // Ajouter le nouveau message
+        
         ObjectNode newContent =
             objectMapper.createObjectNode();
         newContent.put("role", "user");
@@ -181,7 +179,7 @@ public class GeminiService {
         return objectMapper.writeValueAsString(root);
     }
 
-    // ─── Appel HTTP vers Gemini ───────────────────────
+    
     private String callGemini(String requestBodyJson)
             throws Exception {
         String url = apiUrl + "?key=" + apiKey;
@@ -202,10 +200,10 @@ public class GeminiService {
             if (!response.isSuccessful()) {
                 String errorBody = response.body() != null
                     ? response.body().string() : "null";
-                log.error("Gemini erreur {} : {}",
+                log.error("Gemini error {} : {}",
                     response.code(), errorBody);
                 throw new RuntimeException(
-                    "Erreur Gemini : "
+                    "Error Gemini : "
                     + response.code());
             }
 
@@ -215,7 +213,7 @@ public class GeminiService {
         }
     }
 
-    // ─── Extraire le texte de la réponse ─────────────
+    
     private String extractContent(String responseJson)
             throws Exception {
         JsonNode root = objectMapper

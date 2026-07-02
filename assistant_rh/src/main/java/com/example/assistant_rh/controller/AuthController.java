@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Authentification",
-    description = "Login, inscription, profil")
+    description = "Login, registration, profile")
 public class AuthController {
 
     private final AuthService authService;
@@ -33,7 +33,7 @@ public class AuthController {
             authService.login(request));
     }
 
-    @Operation(summary = "Créer un employé")
+    @Operation(summary = "Create an employee")
     @PostMapping("/register")
     @PreAuthorize("hasRole('ADMIN_RH')")
     public ResponseEntity<AuthResponse> register(
@@ -43,7 +43,7 @@ public class AuthController {
             authService.register(request));
     }
 
-    @Operation(summary = "Inscription candidat")
+    @Operation(summary = "Candidate registration")
     @PostMapping("/register/candidate")
     public ResponseEntity<AuthResponse>
             registerCandidate(
@@ -53,7 +53,7 @@ public class AuthController {
             authService.registerCandidate(request));
     }
 
-    @Operation(summary = "Modifier mon profil")
+    @Operation(summary = "Edit my profile")
     @PutMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AuthResponse>
@@ -64,19 +64,18 @@ public class AuthController {
             authService.updateProfile(request));
     }
 
-    @Operation(summary = "Rafraîchir le token")
+    @Operation(summary = "Refresh Token")
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(
             @Valid @RequestBody
             RefreshTokenRequest request) {
-        // ✅ Passer l'objet entier, pas juste
-        // le string
+        
         return ResponseEntity.ok(
             authService.refreshToken(
                 request.getRefreshToken()));
     }
 
-    @Operation(summary = "Déconnexion")
+    @Operation(summary = "Disconnect")
     @PostMapping("/logout")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> logout(

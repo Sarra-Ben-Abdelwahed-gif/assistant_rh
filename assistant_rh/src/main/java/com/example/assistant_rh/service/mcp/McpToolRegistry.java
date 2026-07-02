@@ -31,7 +31,7 @@ public class McpToolRegistry {
     private final JobOfferRepository jobOfferRepository;
 
     // ══════════════════════════════════════════════
-    // OUTIL 1 — Solde de congés
+    // Tool 1 — Leave Balance 
     // ══════════════════════════════════════════════
     public String getLeaveBalance(String email) {
         try {
@@ -68,7 +68,7 @@ public class McpToolRegistry {
     }
 
     // ══════════════════════════════════════════════
-    // OUTIL 2 — Créer une demande de congé
+    // Tool 2 — Create a leave request
     // ══════════════════════════════════════════════
     public String createLeaveRequest(
             String email,
@@ -129,7 +129,7 @@ public class McpToolRegistry {
                     .build();
 
             leaveRepository.save(leave);
-            log.info("MCP: congé créé pour {}",
+            log.info("MCP: Leave created for {}",
                 email);
 
             return String.format(
@@ -152,7 +152,7 @@ public class McpToolRegistry {
     }
 
     // ══════════════════════════════════════════════
-    // OUTIL 3 — Mes demandes de congé
+    // Tool 3 — My leave requests
     // ══════════════════════════════════════════════
     public String getMyLeaves(String email) {
         try {
@@ -200,7 +200,7 @@ public class McpToolRegistry {
     }
 
     // ══════════════════════════════════════════════
-    // OUTIL 4 — Mes documents
+    // Tool 4 — My documents
     // ══════════════════════════════════════════════
     public String getMyDocuments(String email) {
         try {
@@ -239,7 +239,7 @@ public class McpToolRegistry {
     }
 
     // ══════════════════════════════════════════════
-    // OUTIL 5 — Mon profil employé
+    // Tool 5 — My employee profile 
     // ══════════════════════════════════════════════
     public String getMyProfile(String email) {
         try {
@@ -279,8 +279,7 @@ public class McpToolRegistry {
     }
 
     // ══════════════════════════════════════════════
-    // OUTIL 6 — Offres d'emploi disponibles
-    //           (pour candidats)
+    // Tool 6 — Available job offers (for candidates)
     // ══════════════════════════════════════════════
     public String getActiveJobs() {
         try {
@@ -314,7 +313,7 @@ public class McpToolRegistry {
     }
 
     // ══════════════════════════════════════════════
-    // OUTIL 7 — Mes candidatures (pour candidats)
+    // Tool 7 — My applications (for candidates)
     // ══════════════════════════════════════════════
     public String getMyCandidatures(String email) {
         try {
@@ -347,7 +346,7 @@ public class McpToolRegistry {
     }
 
     // ══════════════════════════════════════════════
-    // OUTIL 8 — Statistiques RH (pour admin)
+    // TOOL 8 — HR Statistics (for admin)
     // ══════════════════════════════════════════════
     public String getHrStats() {
         try {
@@ -382,7 +381,7 @@ public class McpToolRegistry {
     }
 
     // ══════════════════════════════════════════════
-    // OUTIL 9 — Chercher un employé (pour admin)
+    // TOOL 9 — Search employee (for admin)
     // ══════════════════════════════════════════════
     public String searchEmployee(String query) {
         try {
@@ -433,7 +432,7 @@ public class McpToolRegistry {
     }
 
     // ══════════════════════════════════════════════
-    // OUTIL 10 — Congés en attente (pour admin)
+    // TOOL 10 — Pending leaves (for admin)
     // ══════════════════════════════════════════════
     public String getPendingLeaves() {
         try {

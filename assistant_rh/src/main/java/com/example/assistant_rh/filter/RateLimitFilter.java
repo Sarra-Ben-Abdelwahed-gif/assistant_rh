@@ -42,7 +42,7 @@ public class RateLimitFilter
 
         Bucket bucket;
 
-        // Rate limit strict sur l'auth
+        
         if (path.startsWith("/api/auth/login")
                 || path.startsWith(
                     "/api/auth/register")) {

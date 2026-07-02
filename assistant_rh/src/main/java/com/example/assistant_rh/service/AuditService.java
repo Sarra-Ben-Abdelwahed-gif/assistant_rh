@@ -60,7 +60,7 @@ public class AuditService {
         log(email, "CREATE_LEAVE",
             "LEAVE_REQUEST",
             String.valueOf(leaveId),
-            "Demande de congé créée",
+            "Leave request created",
             true);
     }
 
@@ -70,7 +70,7 @@ public class AuditService {
         log(adminEmail, "UPDATE_LEAVE_STATUS",
             "LEAVE_REQUEST",
             String.valueOf(leaveId),
-            "Statut changé : " + status,
+            "Status changed : " + status,
             true);
     }
 
@@ -80,7 +80,7 @@ public class AuditService {
         log(email, "UPLOAD_DOCUMENT",
             "DOCUMENT",
             String.valueOf(docId),
-            "Fichier uploadé : " + fileName,
+            "File uploaded : " + fileName,
             true);
     }
 
@@ -89,7 +89,7 @@ public class AuditService {
         log(adminEmail, "CREATE_EMPLOYEE",
             "EMPLOYEE",
             String.valueOf(empId),
-            "Employé créé",
+            "Employee created",
             true);
     }
 
