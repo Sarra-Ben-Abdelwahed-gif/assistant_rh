@@ -20,6 +20,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,35 +39,32 @@ public class LeaveService {
     private final UserRepository userRepository;
     private final MapperConfig mapper;
 
-    public LeaveRequestDTO create(
-            LeaveRequestCreate request) {
+    public LeaveRequestDTO create(LeaveRequestCreate request) {
         String email = getCurrentEmail();
         Employee employee = employeeRepository
                 .findByEmail(email)
-                .orElseThrow(() ->
-                    new ResourceNotFoundException(
-                        "Employee", "email", email));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "email", email));
 
-        if (request.getEndDate()
-                .isBefore(request.getStartDate()))
-            throw new BadRequestException(
-                "La date de fin doit être après la date de début");
+        if (request.getEndDate().isBefore(request.getStartDate())) {
+            throw new BadRequestException("La date de fin doit être après la date de début");
+        }
 
         if (leaveRepository.existsOverlappingLeave(
                 employee.getId(),
                 request.getStartDate(),
-                request.getEndDate()))
-            throw new BadRequestException(
-                "Vous avez déjà une demande sur cette période");
+                request.getEndDate())) {
+            throw new BadRequestException("Vous avez déjà une demande sur cette période");
+        }
 
         long days = java.time.temporal.ChronoUnit.DAYS
-                .between(request.getStartDate(),
-                    request.getEndDate()) + 1;
+                .between(request.getStartDate(), request.getEndDate()) + 1;
 
-        if (request.getType() == LeaveType.ANNUAL
-                && employee.getAnnualLeaveBalance() < days)
-            throw new InsufficientLeaveBalanceException(
-                employee.getAnnualLeaveBalance(), days);
+        if (request.getType() == LeaveType.ANNUAL) {
+            if (employee.getAnnualLeaveBalance() < days) {
+                throw new InsufficientLeaveBalanceException(
+                        employee.getAnnualLeaveBalance(), days);
+            }
+        }
 
         LeaveRequest leave = LeaveRequest.builder()
                 .employee(employee)
@@ -73,26 +74,22 @@ public class LeaveService {
                 .reason(request.getReason())
                 .build();
 
-        log.info("Demande congé créée : employé={}",
-            employee.getEmail());
+        log.info("Demande congé créée : employé={}", employee.getEmail());
         return mapper.toLeaveDTO(
-            leaveRepository.save(leave));
+                leaveRepository.save(leave));
     }
 
-    public List<LeaveRequestDTO> getAll() {
-        return leaveRepository.findAll()
-                .stream()
-                .map(mapper::toLeaveDTO)
-                .collect(Collectors.toList());
+    public Page<LeaveRequestDTO> getAll(Pageable pageable) {
+        return leaveRepository.findAll(pageable)
+                .map(mapper::toLeaveDTO);
     }
 
     public List<LeaveRequestDTO> getMyLeaves() {
         String email = getCurrentEmail();
         Employee employee = employeeRepository
                 .findByEmail(email)
-                .orElseThrow(() ->
-                    new ResourceNotFoundException(
-                        "Employee", "email", email));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", "email", email));
+
         return leaveRepository
                 .findByEmployeeId(employee.getId())
                 .stream()
@@ -108,24 +105,19 @@ public class LeaveService {
                 .collect(Collectors.toList());
     }
 
-    public LeaveRequestDTO updateStatus(
-            Long id, LeaveStatusUpdate update) {
+    public LeaveRequestDTO updateStatus(Long id, LeaveStatusUpdate update) {
         LeaveRequest leave = leaveRepository
                 .findById(id)
-                .orElseThrow(() ->
-                    new ResourceNotFoundException(
-                        "LeaveRequest", "id", id));
+                .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest", "id", id));
 
-        if (leave.getStatus() != LeaveStatus.PENDING)
-            throw new BadRequestException(
-                "Cette demande a déjà été traitée");
+        if (leave.getStatus() != LeaveStatus.PENDING) {
+            throw new BadRequestException("Cette demande a déjà été traitée");
+        }
 
         String adminEmail = getCurrentEmail();
         User admin = userRepository
                 .findByEmail(adminEmail)
-                .orElseThrow(() ->
-                    new ResourceNotFoundException(
-                        "User", "email", adminEmail));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", adminEmail));
 
         leave.setStatus(update.getStatus());
         leave.setAdminComment(update.getAdminComment());
@@ -135,36 +127,34 @@ public class LeaveService {
         if (update.getStatus() == LeaveStatus.APPROVED) {
             Employee employee = leave.getEmployee();
             if (leave.getType() == LeaveType.ANNUAL) {
-                int newBalance = employee
-                    .getAnnualLeaveBalance()
-                    - (int) leave.getNumberOfDays();
-                employee.setAnnualLeaveBalance(
-                    Math.max(newBalance, 0));
+                long days = java.time.temporal.ChronoUnit.DAYS
+                        .between(leave.getStartDate(), leave.getEndDate()) + 1;
+                int newBalance = employee.getAnnualLeaveBalance() - (int) days;
+                employee.setAnnualLeaveBalance(Math.max(newBalance, 0));
                 employeeRepository.save(employee);
             }
         }
 
-        log.info("Congé {} : id={} par {}",
-            update.getStatus(), id, adminEmail);
+        log.info("Congé {} : id={} par {}", leave.getStatus(), id, adminEmail);
         return mapper.toLeaveDTO(
-            leaveRepository.save(leave));
+                leaveRepository.save(leave));
     }
 
     public void delete(Long id) {
         LeaveRequest leave = leaveRepository
                 .findById(id)
-                .orElseThrow(() ->
-                    new ResourceNotFoundException(
-                        "LeaveRequest", "id", id));
-        if (leave.getStatus() != LeaveStatus.PENDING)
-            throw new BadRequestException(
-                "Impossible de supprimer une demande traitée");
+                .orElseThrow(() -> new ResourceNotFoundException("LeaveRequest", "id", id));
+
+        if (leave.getStatus() != LeaveStatus.PENDING) {
+            throw new BadRequestException("Impossible de supprimer une demande traitée");
+        }
         leaveRepository.delete(leave);
         log.info("Demande congé supprimée : id={}", id);
     }
 
     private String getCurrentEmail() {
         return SecurityContextHolder.getContext()
-                .getAuthentication().getName();
+                .getAuthentication()
+                .getName();
     }
 }
