@@ -1,5 +1,6 @@
 package com.example.assistant_rh.config;
 
+import com.example.assistant_rh.filter.RateLimitFilter;
 import com.example.assistant_rh.security.JwtAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final RateLimitFilter rateLimitFilter;
     private final JwtAuthFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
@@ -39,19 +41,28 @@ public class SecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(cors -> cors.configurationSource(
                 corsConfigurationSource()))
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(
+                    SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/jobs/public/**").permitAll()
-                .requestMatchers("/api/applications/apply/**")
-                    .permitAll()
+                .requestMatchers(
+                    "/api/auth/**",
+                    "/api/jobs/public/**",
+                    "/api/applications/apply/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/api-docs/**",
+                    "/v3/api-docs/**"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .authenticationProvider(authenticationProvider())
+            .authenticationProvider(
+                authenticationProvider())
             .addFilterBefore(
                 jwtAuthFilter,
+                UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(
+                rateLimitFilter,
                 UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

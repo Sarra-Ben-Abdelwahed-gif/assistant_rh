@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -78,11 +80,9 @@ public class ApplicationService {
             applicationRepository.save(app));
     }
 
-    public List<ApplicationDTO> getAll() {
-        return applicationRepository.findAll()
-                .stream()
-                .map(this::enrichWithDownloadUrl)
-                .collect(Collectors.toList());
+    public Page<ApplicationDTO> getAll(Pageable pageable) {
+        return applicationRepository.findAll(pageable)
+                .map(this::enrichWithDownloadUrl);
     }
 
     public List<ApplicationDTO> getByJobOffer(

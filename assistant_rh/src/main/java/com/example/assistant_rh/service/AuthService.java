@@ -3,6 +3,7 @@ package com.example.assistant_rh.service;
 import com.example.assistant_rh.dto.request.*;
 import com.example.assistant_rh.dto.response.AuthResponse;
 import com.example.assistant_rh.entity.Employee;
+import com.example.assistant_rh.entity.RefreshToken;
 import com.example.assistant_rh.entity.User;
 import com.example.assistant_rh.enums.EmployeeStatus;
 import com.example.assistant_rh.enums.Role;
@@ -29,6 +30,7 @@ import java.time.LocalDate;
 @Transactional
 public class AuthService {
 
+    private final RefreshTokenService refreshTokenService;
     private final UserRepository userRepository;
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
@@ -49,13 +51,13 @@ public class AuthService {
                         "User", "email",
                         request.getEmail()));
 
-        log.info("Connexion réussie : {}",
+        log.info("Login successful : {}",
             user.getEmail());
 
         return buildAuthResponse(user);
     }
 
-    // ─── Inscription Admin/Employé ────────────────────
+    // ───  Admin/Employee registration ────────────────────
     public AuthResponse register(RegisterRequest request) {
 
         // Vérifier correspondance mots de passe
@@ -94,17 +96,17 @@ public class AuthService {
             employeeRepository.save(employee);
         }
 
-        log.info("Utilisateur créé : {} ({})",
+        log.info("User created : {} ({})",
             user.getEmail(), user.getRole());
 
         return buildAuthResponse(user);
     }
 
-    // ─── Inscription Candidat (publique) ─────────────
+    // ─── Candidate Registration (Public) ─────────────
     public AuthResponse registerCandidate(
             CandidateRegisterRequest request) {
 
-        // Vérifier correspondance mots de passe
+        // Verify password match
         if (!request.getPassword()
                 .equals(request.getConfirmPassword()))
             throw new PasswordMismatchException();
@@ -122,13 +124,13 @@ public class AuthService {
                 .build();
         userRepository.save(user);
 
-        log.info("Candidat inscrit : {}",
+        log.info("Candidate registered : {}",
             user.getEmail());
 
         return buildAuthResponse(user);
     }
 
-    // ─── Modifier profil ─────────────────────────────
+    // ─── Update Profile ─────────────────────────────
     public AuthResponse updateProfile(
             UpdateProfileRequest request) {
 
@@ -143,19 +145,19 @@ public class AuthService {
                     new ResourceNotFoundException(
                         "User", "email", email));
 
-        // Changer mot de passe si demandé
+        // Change password if requested
         if (request.getNewPassword() != null
                 && !request.getNewPassword().isBlank()) {
 
-            // Vérifier ancien mot de passe
+            // verify old password
             if (request.getCurrentPassword() == null
                     || !passwordEncoder.matches(
                         request.getCurrentPassword(),
                         user.getPassword()))
                 throw new BadRequestException(
-                    "Mot de passe actuel incorrect");
+                    "password mismatch: current password is incorrect");
 
-            // Vérifier correspondance nouveaux mdp
+            // Verify new password match
             if (!request.getNewPassword().equals(
                     request.getConfirmNewPassword()))
                 throw new PasswordMismatchException();
@@ -166,7 +168,7 @@ public class AuthService {
 
         userRepository.save(user);
 
-        // Mettre à jour profil employé si nécessaire
+        // update employee profile if necessary 
         if (user.getRole() == Role.EMPLOYEE) {
             employeeRepository
                 .findByEmail(email)
@@ -189,17 +191,43 @@ public class AuthService {
                 });
         }
 
-        log.info("Profil mis à jour : {}", email);
+        log.info("Profile updated : {}", email);
         return buildAuthResponse(user);
     }
 
-    // ─── Méthode privée utilitaire ────────────────────
+    // ─── Utility private method ────────────────────
     private AuthResponse buildAuthResponse(User user) {
-        return AuthResponse.builder()
-                .token(jwtUtil.generateToken(user))
-                .email(user.getEmail())
-                .role(user.getRole())
-                .userId(user.getId())
-                .build();
+    RefreshToken refresh =
+        refreshTokenService
+            .createRefreshToken(user);
+
+    return AuthResponse.builder()
+        .accessToken(jwtUtil.generateToken(user))
+        .refreshToken(refresh.getToken())
+        .tokenType("Bearer")
+        .expiresIn(86400)
+        .email(user.getEmail())
+        .role(user.getRole())
+        .userId(user.getId())
+        .build();
     }
+    public AuthResponse refreshToken(
+        String refreshTokenStr) {
+
+    RefreshToken refreshToken =
+        refreshTokenService
+            .validate(refreshTokenStr);
+
+    User user = refreshToken.getUser();
+    return buildAuthResponse(user);
+    }
+    public void logout(String refreshTokenStr) {
+    RefreshToken refreshToken =
+        refreshTokenService
+            .validate(refreshTokenStr);
+    refreshTokenService
+        .revokeAll(refreshToken.getUser());
+    log.info("Déconnexion : {}",
+        refreshToken.getUser().getEmail());
+}
 }

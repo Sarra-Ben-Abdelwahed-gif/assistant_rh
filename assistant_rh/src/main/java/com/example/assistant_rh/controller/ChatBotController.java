@@ -8,8 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/chatbot")
@@ -18,6 +16,7 @@ public class ChatBotController {
 
     private final ChatBotService chatBotService;
 
+    // Question simple sans historique
     @PostMapping("/ask")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ChatResponse> ask(
@@ -27,15 +26,14 @@ public class ChatBotController {
                 request.getMessage()));
     }
 
+    // Conversation avec historique + MCP
     @PostMapping("/chat")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ChatResponse> chat(
-            @RequestBody Map<String, Object> body) {
-        String message = (String) body.get("message");
-        List<Map<String, String>> history =
-            (List<Map<String, String>>)
-            body.getOrDefault("history", List.of());
+            @Valid @RequestBody ChatRequest request) {
         return ResponseEntity.ok(
-            chatBotService.respond(message, history));
+            chatBotService.respond(
+                request.getMessage(),
+                request.getHistory()));
     }
 }

@@ -1,8 +1,14 @@
 package com.example.assistant_rh.controller;
 
-import com.example.assistant_rh.dto.request.*;
+import com.example.assistant_rh.dto.request.CandidateRegisterRequest;
+import com.example.assistant_rh.dto.request.LoginRequest;
+import com.example.assistant_rh.dto.request.RefreshTokenRequest;
+import com.example.assistant_rh.dto.request.RegisterRequest;
+import com.example.assistant_rh.dto.request.UpdateProfileRequest;
 import com.example.assistant_rh.dto.response.AuthResponse;
 import com.example.assistant_rh.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -12,39 +18,72 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Authentification",
+    description = "Login, inscription, profil")
 public class AuthController {
 
     private final AuthService authService;
 
+    @Operation(summary = "Connexion")
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(
-            @Valid @RequestBody LoginRequest request) {
+            @Valid @RequestBody
+            LoginRequest request) {
         return ResponseEntity.ok(
             authService.login(request));
     }
 
+    @Operation(summary = "Créer un employé")
     @PostMapping("/register")
-    @PreAuthorize("hasRole('HR_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN_RH')")
     public ResponseEntity<AuthResponse> register(
-            @Valid @RequestBody RegisterRequest request) {
+            @Valid @RequestBody
+            RegisterRequest request) {
         return ResponseEntity.ok(
             authService.register(request));
     }
 
+    @Operation(summary = "Inscription candidat")
     @PostMapping("/register/candidate")
-    public ResponseEntity<AuthResponse> registerCandidate(
+    public ResponseEntity<AuthResponse>
+            registerCandidate(
             @Valid @RequestBody
             CandidateRegisterRequest request) {
         return ResponseEntity.ok(
             authService.registerCandidate(request));
     }
 
+    @Operation(summary = "Modifier mon profil")
     @PutMapping("/profile")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<AuthResponse> updateProfile(
+    public ResponseEntity<AuthResponse>
+            updateProfile(
             @Valid @RequestBody
             UpdateProfileRequest request) {
         return ResponseEntity.ok(
             authService.updateProfile(request));
+    }
+
+    @Operation(summary = "Rafraîchir le token")
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(
+            @Valid @RequestBody
+            RefreshTokenRequest request) {
+        // ✅ Passer l'objet entier, pas juste
+        // le string
+        return ResponseEntity.ok(
+            authService.refreshToken(
+                request.getRefreshToken()));
+    }
+
+    @Operation(summary = "Déconnexion")
+    @PostMapping("/logout")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> logout(
+            @Valid @RequestBody
+            RefreshTokenRequest request) {
+        authService.logout(
+            request.getRefreshToken());
+        return ResponseEntity.noContent().build();
     }
 }

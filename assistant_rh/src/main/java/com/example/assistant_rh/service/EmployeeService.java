@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -31,11 +33,10 @@ public class EmployeeService {
     private final PasswordEncoder passwordEncoder;
     private final MapperConfig mapper;
 
-    public List<EmployeeDTO> getAll() {
-        return employeeRepository.findAll()
-                .stream()
-                .map(mapper::toEmployeeDTO)
-                .collect(Collectors.toList());
+    
+    public Page<EmployeeDTO> getAll(Pageable pageable) {
+        return employeeRepository.findAll(pageable)
+                .map(mapper::toEmployeeDTO);
     }
 
     public EmployeeDTO getById(Long id) {
