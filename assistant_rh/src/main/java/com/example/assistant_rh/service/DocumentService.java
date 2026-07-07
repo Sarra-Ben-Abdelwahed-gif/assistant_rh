@@ -1,177 +1,304 @@
 package com.example.assistant_rh.service;
 
-import com.example.assistant_rh.config.MapperConfig;
-import com.example.assistant_rh.dto.response.DocumentDTO;
+import com.example.assistant_rh.dto.response
+    .DocumentDTO;
+import com.example.assistant_rh.dto.response
+    .DocumentUploadResponse;
 import com.example.assistant_rh.entity.Document;
 import com.example.assistant_rh.entity.Employee;
 import com.example.assistant_rh.entity.User;
-import com.example.assistant_rh.exception.FileUploadException;
-import com.example.assistant_rh.exception.ResourceNotFoundException;
-import com.example.assistant_rh.repository.DocumentRepository;
-import com.example.assistant_rh.repository.EmployeeRepository;
-import com.example.assistant_rh.repository.UserRepository;
+
+import com.example.assistant_rh.exception
+    .FileUploadException;
+import com.example.assistant_rh.exception
+    .ResourceNotFoundException;
+import com.example.assistant_rh.repository
+    .DocumentRepository;
+import com.example.assistant_rh.repository
+    .EmployeeRepository;
+import com.example.assistant_rh.repository
+    .UserRepository;
+import com.example.assistant_rh.config.MapperConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context
+    .SecurityContextHolder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart
+    .MultipartFile;
+import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
 public class DocumentService {
 
-    private final DocumentRepository documentRepository;
-    private final EmployeeRepository employeeRepository;
+    private final DocumentRepository
+        documentRepository;
+    private final EmployeeRepository
+        employeeRepository;
     private final UserRepository userRepository;
     private final MinioService minioService;
     private final MapperConfig mapper;
 
-    
-    public DocumentDTO uploadDocument(MultipartFile file,
-                                      Long employeeId, String category,
-                                      String description) {
-        Employee employee = employeeRepository
-                .findById(employeeId)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Employee", "id", employeeId));
+    // Allowed file types
+    private static final List<String>
+        ALLOWED_TYPES = Arrays.asList(
+            "application/pdf",
+            "application/msword",
+            "application/vnd.openxmlformats"
+                + "-officedocument"
+                + ".wordprocessingml.document",
+            "image/jpeg",
+            "image/png");
 
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication().getName();
-        User uploader = userRepository
-                .findByEmail(email)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "User", "email", email));
+    private static final List<String>
+        ALLOWED_EXTENSIONS = Arrays.asList(
+            "pdf", "doc", "docx",
+            "jpg", "jpeg", "png");
 
-        String minioKey;
-        try {
-            minioKey = minioService.uploadFile(file);
-        } catch (Exception e) {
-            throw new FileUploadException(e.getMessage());
+    // Max size: 10 MB
+    private static final long MAX_SIZE =
+        10 * 1024 * 1024;
+
+    // ── Main upload ──────────────────────
+    public DocumentUploadResponse upload(
+            MultipartFile file,
+            Long employeeId,
+            String category,
+            String description) {
+
+        // ── file validation ─────────────
+
+        // 1. empty file
+        if (file == null || file.isEmpty()) {
+            return buildError(
+                "No file selected. "
+                + "Please choose a file.");
         }
 
-        String fileName = file.getOriginalFilename();
-        String fileType = fileName != null
-                && fileName.contains(".")
-                ? fileName.substring(
-                fileName.lastIndexOf('.') + 1)
-                .toUpperCase()
-                : "UNKNOWN";
+        // 2. File size
+        if (file.getSize() > MAX_SIZE) {
+            long sizeMb = file.getSize()
+                / (1024 * 1024);
+            return buildError(
+                "File too large : " + sizeMb
+                + " MB. Maximum allowed : 10 MB.");
+        }
 
-        Document doc = Document.builder()
+        // 3. Type MIME
+        String contentType =
+            file.getContentType();
+        if (contentType == null
+                || !ALLOWED_TYPES.contains(
+                    contentType)) {
+            return buildError(
+                "File type not allowed : "
+                + contentType
+                + ". Allowed types : "
+                + "PDF, DOC, DOCX, JPG, PNG.");
+        }
+
+        // 4. file extension
+        String originalName =
+            file.getOriginalFilename();
+        if (originalName == null
+                || originalName.isBlank()) {
+            return buildError(
+                "Invalid file name.");
+        }
+
+        String extension = originalName
+            .substring(
+                originalName.lastIndexOf('.')
+                + 1)
+            .toLowerCase();
+
+        if (!ALLOWED_EXTENSIONS.contains(
+                extension)) {
+            return buildError(
+                "Extension ." + extension
+                + " not allowed. "
+                + "Allowed : .pdf, .doc, "
+                + ".docx, .jpg, .png");
+        }
+
+        // 5. dangerous file name
+        if (originalName.contains("..")
+                || originalName.contains("/")
+                || originalName.contains("\\")) {
+            return buildError(
+                "Invalid file name.");
+        }
+
+        // ── Get employee ───────────────
+        Employee employee = employeeRepository
+            .findById(employeeId)
+            .orElseThrow(() ->
+                new ResourceNotFoundException(
+                    "Employee", "id",
+                    employeeId));
+
+        // ── Get current admin ────────
+        String adminEmail =
+            SecurityContextHolder.getContext()
+                .getAuthentication().getName();
+        User uploader = userRepository
+            .findByEmail(adminEmail)
+            .orElse(null);
+
+        // ── Upload to MinIO ─────────────────
+        try {
+            String minioKey = minioService
+                .uploadFile(file, employeeId);
+
+            // ── Create Document entity ───────
+            Document document = Document.builder()
+                .fileName(originalName)
+                .fileType(extension.toUpperCase())
+                .contentType(contentType)
+                .fileSize(file.getSize())
                 .minioKey(minioKey)
                 .documentCategory(category)
                 .description(description)
+                .uploadedAt(LocalDateTime.now())
                 .employee(employee)
                 .uploadedBy(uploader)
                 .build();
 
-        DocumentDTO dto = mapper.toDocumentDTO(
-                documentRepository.save(doc));
+            documentRepository.save(document);
 
-        try {
-            dto.setDownloadUrl(
-                    minioService.generateDownloadUrl(minioKey));
-        } catch (Exception ignored) {}
+            // ── Generate download URL ─
+            String downloadUrl = "";
+            try {
+                downloadUrl = minioService
+                    .generateDownloadUrl(minioKey);
+            } catch (Exception e) {
+                log.warn("Download URL error : {}",
+                    e.getMessage());
+            }
 
-        log.info("Document uploaded: {} for employee id={}",
-                fileName, employeeId);
-        return dto;
-    }
+            log.info("Document uploaded : {} "
+                + "for employee id={}",
+                originalName, employeeId);
 
-    
-    public Page<DocumentDTO> getAll(Pageable pageable) {
-        return documentRepository.findAll(pageable)
-                .map(d -> {
-                    DocumentDTO dto = mapper.toDocumentDTO(d);
-                    try {
-                        dto.setDownloadUrl(
-                                minioService.generateDownloadUrl(d.getMinioKey()));
-                    } catch (Exception ignored) {}
-                    return dto;
-                });
-    }
+            // ── success response ────────────────
+            return DocumentUploadResponse.builder()
+                .id(document.getId())
+                .fileName(originalName)
+                .fileType(extension.toUpperCase())
+                .contentType(contentType)
+                .fileSize(file.getSize())
+                .fileSizeFormatted(
+                    formatSize(file.getSize()))
+                .documentCategory(category)
+                .description(description)
+                .uploadedAt(
+                    document.getUploadedAt())
+                .downloadUrl(downloadUrl)
+                .success(true)
+                .message("✅ Document '"
+                    + originalName
+                    + "' uploaded successfully ! ("
+                    + formatSize(file.getSize())
+                    + ")")
+                .employeeName(
+                    employee.getFirstName()
+                    + " "
+                    + employee.getLastName())
+                .build();
 
-    public List<DocumentDTO> getByEmployee(Long employeeId) {
-        if (!employeeRepository.existsById(employeeId)) {
-            throw new ResourceNotFoundException(
-                    "Employee", "id", employeeId);
+        } catch (Exception e) {
+            log.error("Upload failed : {}",
+                e.getMessage());
+            return buildError(
+                "Upload failed : "
+                + e.getMessage());
         }
-
-        return documentRepository
-                .findByEmployeeId(employeeId)
-                .stream()
-                .map(d -> {
-                    DocumentDTO dto = mapper.toDocumentDTO(d);
-                    try {
-                        dto.setDownloadUrl(
-                                minioService.generateDownloadUrl(
-                                        d.getMinioKey()));
-                    } catch (Exception ignored) {}
-                    return dto;
-                })
-                .collect(Collectors.toList());
     }
 
-    
-    public DocumentDTO downloadDocument(Long id) {
+    // ── Get employee documents ──────────
+    public List<DocumentDTO> getByEmployee(
+            Long employeeId) {
+        return documentRepository
+            .findByEmployeeId(employeeId)
+            .stream()
+            .map(d -> {
+                DocumentDTO dto =
+                    mapper.toDocumentDTO(d);
+                try {
+                    dto.setDownloadUrl(
+                        minioService
+                            .generateDownloadUrl(
+                                d.getMinioKey()));
+                } catch (Exception e) {
+                    log.warn("URL error : {}",
+                        e.getMessage());
+                }
+                return dto;
+            })
+            .toList();
+    }
+
+    // ── download document ───────────────
+    public DocumentDTO getDownloadUrl(
+            Long docId) {
         Document doc = documentRepository
-                .findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Document", "id", id));
+            .findById(docId)
+            .orElseThrow(() ->
+                new ResourceNotFoundException(
+                    "Document", "id", docId));
         DocumentDTO dto = mapper.toDocumentDTO(doc);
         try {
             dto.setDownloadUrl(
-                    minioService.generateDownloadUrl(
-                            doc.getMinioKey()));
+                minioService.generateDownloadUrl(
+                    doc.getMinioKey()));
         } catch (Exception e) {
             throw new FileUploadException(
-                    "Unable to generate URL : "
-                            + e.getMessage());
+                e.getMessage());
         }
         return dto;
     }
 
-    
-    public DocumentDTO getById(Long id) {
+    // ── delete document ─────────────────
+    public void delete(Long docId) {
         Document doc = documentRepository
-                .findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Document", "id", id));
-        DocumentDTO dto = mapper.toDocumentDTO(doc);
+            .findById(docId)
+            .orElseThrow(() ->
+                new ResourceNotFoundException(
+                    "Document", "id", docId));
         try {
-            dto.setDownloadUrl(
-                    minioService.generateDownloadUrl(doc.getMinioKey()));
-        } catch (Exception ignored) {}
-        return dto;
-    }
-
-    
-    public void deleteDocument(Long id) {
-        Document doc = documentRepository
-                .findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Document", "id", id));
-        try {
-            minioService.deleteFile(doc.getMinioKey());
+            minioService.deleteFile(
+                doc.getMinioKey());
         } catch (Exception e) {
-            log.warn("MinIO file not deleted: {}",
-                    e.getMessage());
+            log.warn("MinIO delete error : {}",
+                e.getMessage());
         }
         documentRepository.delete(doc);
-        log.info("Document deleted: id={}", id);
+        log.info("Document deleted id={}",
+            docId);
     }
+
+    // ── private utilities ────────────────────
+    private DocumentUploadResponse buildError(
+            String message) {
+        return DocumentUploadResponse.builder()
+            .success(false)
+            .message("❌ " + message)
+            .build();
+    }
+
+    private String formatSize(long bytes) {
+        if (bytes < 1024)
+            return bytes + " B";
+        if (bytes < 1024 * 1024)
+            return String.format("%.1f KB",
+                bytes / 1024.0);
+        return String.format("%.1f MB",
+            bytes / (1024.0 * 1024));
+    }
+
+    
 }

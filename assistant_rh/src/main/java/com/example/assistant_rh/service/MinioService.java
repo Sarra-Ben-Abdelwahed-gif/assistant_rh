@@ -4,10 +4,11 @@ import io.minio.*;
 import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation
+    .Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-import java.util.UUID;
+import org.springframework.web.multipart
+    .MultipartFile;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -20,56 +21,83 @@ public class MinioService {
     @Value("${minio.bucket-documents}")
     private String bucket;
 
+    // Initialize bucket at startup
     public void initBucket() {
         try {
-            boolean exists = minioClient.bucketExists(
-                BucketExistsArgs.builder()
-                    .bucket(bucket).build());
+            boolean exists = minioClient
+                .bucketExists(BucketExistsArgs
+                    .builder()
+                    .bucket(bucket)
+                    .build());
             if (!exists) {
                 minioClient.makeBucket(
                     MakeBucketArgs.builder()
-                        .bucket(bucket).build());
-                log.info("Bucket created : {}", bucket);
+                        .bucket(bucket)
+                        .build());
+                log.info("Bucket created : {}",
+                    bucket);
             }
         } catch (Exception e) {
-            log.error("Error bucket : {}", e.getMessage());
+            log.error("Bucket init error : {}",
+                e.getMessage());
         }
     }
 
-    public String uploadFile(MultipartFile file)
-            throws Exception {
-        initBucket();
-        String key = UUID.randomUUID()
-            + "_" + file.getOriginalFilename();
+    // ✅ Upload — accepts MultipartFile + employeeId
+    public String uploadFile(
+            MultipartFile file,
+            Long employeeId) throws Exception {
+
+        String originalName =
+            file.getOriginalFilename();
+        String extension = originalName != null
+            && originalName.contains(".")
+            ? originalName.substring(
+                originalName.lastIndexOf('.'))
+            : "";
+
+        // Unique key: employeeId/timestamp_name
+        String minioKey = "employee-"
+            + employeeId + "/"
+            + System.currentTimeMillis()
+            + "_" + originalName;
+
         minioClient.putObject(
             PutObjectArgs.builder()
                 .bucket(bucket)
-                .object(key)
-                .stream(file.getInputStream(),
+                .object(minioKey)
+                .stream(
+                    file.getInputStream(),
                     file.getSize(), -1)
-                .contentType(file.getContentType())
+                .contentType(
+                    file.getContentType())
                 .build());
-        log.info("File uploaded : {}", key);
-        return key;
+
+        log.info("File uploaded to MinIO : {}",
+            minioKey);
+        return minioKey;
     }
 
-    public String generateDownloadUrl(String key)
-            throws Exception {
+    // Generate download URL (1 hour)
+    public String generateDownloadUrl(
+            String minioKey) throws Exception {
         return minioClient.getPresignedObjectUrl(
             GetPresignedObjectUrlArgs.builder()
-                .bucket(bucket)
-                .object(key)
                 .method(Method.GET)
+                .bucket(bucket)
+                .object(minioKey)
                 .expiry(1, TimeUnit.HOURS)
                 .build());
     }
 
-    public void deleteFile(String key) throws Exception {
+    // delete file
+    public void deleteFile(
+            String minioKey) throws Exception {
         minioClient.removeObject(
             RemoveObjectArgs.builder()
                 .bucket(bucket)
-                .object(key)
+                .object(minioKey)
                 .build());
-        log.info("File deleted : {}", key);
+        log.info("File deleted : {}", minioKey);
     }
 }

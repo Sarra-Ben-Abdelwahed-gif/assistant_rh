@@ -41,39 +41,96 @@ public class ChatBotService {
     private final McpEmailDraftService emailDraftService;
 
     public ChatResponse respond(
-            String message,
-            List<Map<String, String>> history) {
-        String email = getCurrentEmail();
-        Role role = getUserRole(email);
+        String message,
+        List<Map<String, String>> history) {
 
-        // Commit interaction context to persistent user memory
+    String email = getCurrentEmail();
+    Role role = getUserRole(email);
+
+    // Contextual memory
+    try {
         memory.autoExtract(email, message);
-
-        // Detect current query intent
-        McpIntent intent = mcpIntentDetector.detect(message);
-        String toolResult = null;
-
-        if (intent != McpIntent.NONE) {
-            toolResult = executeMcpTool(intent, message, email, role);
-        }
-
-        String userContext = buildContext(email, role);
-        String userMemory = memory.getAllMemories(email);
-        String proactiveAlerts = getRelevantAlerts(role);
-
-        String systemPrompt = buildSystemPrompt(
-            userContext, toolResult,
-            userMemory, proactiveAlerts);
-
-        String reply = geminiService.chatWithHistory(
-            systemPrompt, history, message);
-
-        // Append execution context trace to memory cache maps
-        if (toolResult != null)
-            memory.remember(email, "last_action", intent.name());
-
-        return new ChatResponse(reply, "assistant");
+    } catch (Exception e) {
+        log.warn("Memory error : {}",
+            e.getMessage());
     }
+
+    // Detect MCP intent
+    McpIntent intent =
+        mcpIntentDetector.detect(message);
+    String toolResult = null;
+
+    // Global MCP try-catch
+    try {
+        if (intent != McpIntent.NONE) {
+            toolResult = executeMcpTool(
+                intent, message, email, role);
+        }
+    } catch (Exception e) {
+        log.error("MCP tool error [{}] : {}",
+            intent, e.getMessage());
+        toolResult = null;
+    }
+
+    // User context
+    String userContext = "";
+    try {
+        userContext = buildContext(email, role);
+    } catch (Exception e) {
+        log.warn("Context error : {}",
+            e.getMessage());
+        userContext = "User : " + email;
+    }
+
+    // Memory recall
+    String userMemory = "";
+    try {
+        userMemory =
+            memory.getAllMemories(email);
+    } catch (Exception e) {
+        log.warn("Memory recall error : {}",
+            e.getMessage());
+    }
+
+    // Proactive alerts try-catch
+    String proactiveAlerts = "";
+    try {
+        proactiveAlerts =
+            getRelevantAlerts(role);
+    } catch (Exception e) {
+        log.warn("Alerts error : {}",
+            e.getMessage());
+    }
+
+    // Build system prompt
+    String systemPrompt = buildSystemPrompt(
+        userContext, toolResult,
+        userMemory, proactiveAlerts);
+
+    // Gemini call try-catch
+    String reply;
+    try {
+        reply = geminiService.chatWithHistory(
+            systemPrompt, history, message);
+    } catch (Exception e) {
+        log.error("Gemini error : {}",
+            e.getMessage());
+        reply = "I am temporarily unavailable. "
+            + "Please try again in a few moments.";
+    }
+
+    // Save to memory
+    try {
+        if (toolResult != null)
+            memory.remember(email,
+                "last_action", intent.name());
+    } catch (Exception e) {
+        log.warn("Memory save error : {}",
+            e.getMessage());
+    }
+
+    return new ChatResponse(reply, "assistant");
+}
 
     public ChatResponse respondSimple(String message) {
         return respond(message, List.of());

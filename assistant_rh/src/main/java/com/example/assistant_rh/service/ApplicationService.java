@@ -57,7 +57,7 @@ public class ApplicationService {
 
         if (cv != null && !cv.isEmpty()) {
             try {
-                cvKey = minioService.uploadFile(cv);
+                cvKey = minioService.uploadFile(cv, jobOfferId);
                 cvFileName = cv.getOriginalFilename();
             } catch (Exception e) {
                 throw new FileUploadException(e.getMessage());
